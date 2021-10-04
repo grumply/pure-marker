@@ -15,7 +15,7 @@ module Pure.Data.Marker
   , decodeUUID
   ) where
 
-import Pure.Data.JSON (ToJSON,FromJSON)
+import Pure.Data.JSON (ToJSON(..),FromJSON(..))
 import Pure.Data.Txt as Txt (ToTxt(..),FromTxt(..),Txt,length,unfoldrN,reverse,drop,dropEnd,foldl',filter,uncons)
 import Pure.Data.Time (Time,pattern Milliseconds,time)
 import Pure.Random (Variate(..), Generator, Seed, generate, newSeed) 
@@ -39,7 +39,12 @@ import System.IO.Unsafe (unsafePerformIO)
 --
 data Marker = Marker {-# UNPACK #-}!Word64 {-# UNPACK #-}!Word64
   deriving (Generic,Eq,Ord,Show)
-  deriving anyclass (ToJSON,FromJSON)
+
+instance ToJSON Marker where
+  toJSON = toJSON . encodeBase62
+
+instance FromJSON Marker where
+  parseJSON = fmap decodeBase62 . parseJSON
 
 instance Hashable Marker where
   hashWithSalt salt (Marker w1 w2) = 
